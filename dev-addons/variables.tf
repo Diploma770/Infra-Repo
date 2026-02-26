@@ -50,6 +50,11 @@ variable "eso_gcp_service_account_id" {
   default = "external-secrets"
 }
 
+variable "eso_create_cluster_secret_store" {
+  type    = bool
+  default = true
+}
+
 variable "argocd_create_repo_secret" {
   type    = bool
   default = false

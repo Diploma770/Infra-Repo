@@ -1,0 +1,73 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  plan:
+    name: Plan (${{ matrix.stack }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stack: dev
+            working_dir: dev
+            tfvars_secret: TFVARS_DEV
+            state_prefix: terraform/dev
+          - stack: dev-addons
+            working_dir: dev-addons
+            tfvars_secret: TFVARS_DEV_ADDONS
+            state_prefix: terraform/dev-addons
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ matrix.working_dir }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_TERRAFORM_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Write tfvars from secret
+        run: |
+          case "${{ matrix.tfvars_secret }}" in
+            TFVARS_DEV)
+              cat <<'EOF' > ci.auto.tfvars
+                ${{ secrets.TFVARS_DEV }}
+                EOF
+              ;;
+            TFVARS_DEV_ADDONS)
+              cat <<'EOF' > ci.auto.tfvars
+                ${{ secrets.TFVARS_DEV_ADDONS }}
+                EOF
+              ;;
+          esac
+
+      - name: Terraform Init (GCS backend)
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ matrix.state_prefix }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color -var-file=ci.auto.tfvars
