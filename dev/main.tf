@@ -93,8 +93,9 @@ module "buckets" {
 
   buckets = {
     "${var.project_id}-tfstate-${var.environment}" = {
-      location   = "EU"
-      versioning = true
+      location        = "EU"
+      versioning      = true
+      prevent_destroy = true
     }
 
     "${var.project_id}-app-${var.environment}" = {
