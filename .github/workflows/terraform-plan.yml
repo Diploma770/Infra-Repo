@@ -49,14 +49,10 @@ jobs:
         run: |
           case "${{ matrix.tfvars_secret }}" in
             TFVARS_DEV)
-              cat <<'EOF' > ci.auto.tfvars
-                ${{ secrets.TFVARS_DEV }}
-                EOF
+              printf '%s\n' "${{ secrets.TFVARS_DEV }}" > ci.auto.tfvars
               ;;
             TFVARS_DEV_ADDONS)
-              cat <<'EOF' > ci.auto.tfvars
-                ${{ secrets.TFVARS_DEV_ADDONS }}
-                EOF
+              printf '%s\n' "${{ secrets.TFVARS_DEV_ADDONS }}" > ci.auto.tfvars
               ;;
           esac
 

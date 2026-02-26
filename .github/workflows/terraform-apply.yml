@@ -38,9 +38,7 @@ jobs:
 
       - name: Write tfvars from secret
         run: |
-          cat <<'EOF' > ci.auto.tfvars
-            ${{ secrets.TFVARS_DEV }}
-            EOF
+          printf '%s\n' "${{ secrets.TFVARS_DEV }}" > ci.auto.tfvars
 
       - name: Terraform Init (GCS backend)
         run: |
@@ -88,9 +86,7 @@ jobs:
 
       - name: Write tfvars from secret
         run: |
-          cat <<'EOF' > ci.auto.tfvars
-            ${{ secrets.TFVARS_DEV_ADDONS }}
-            EOF
+          printf '%s\n' "${{ secrets.TFVARS_DEV_ADDONS }}" > ci.auto.tfvars
 
       - name: Terraform Init (GCS backend)
         run: |
