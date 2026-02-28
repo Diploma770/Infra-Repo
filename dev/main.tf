@@ -66,8 +66,8 @@ module "vpc" {
 module "iam" {
   source     = "../modules/iam"
   project_id  = var.project_id
-  # terraform_github_principal = var.terraform_github_principal
-  # cicd_github_principal      = var.cicd_github_principal
+  terraform_github_principal = var.terraform_github_principal
+  cicd_github_principal      = var.cicd_github_principal
 
   depends_on = [google_project_service.required_apis]
 }

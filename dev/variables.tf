@@ -36,11 +36,13 @@ variable "functions_source_bucket" { type = string }
 variable "functions_source_object" { type = string }
 
 variable "terraform_github_principal" {
-  type    = string
-  default = "terraform-sa@my-dev-770.iam.gserviceaccount.com"
+  type        = string
+  description = "GitHub OIDC principalSet/principal allowed to impersonate terraform-sa"
+  default     = null
 }
 
 variable "cicd_github_principal" {
-  type    = string
-  default = "cicd-sa@my-dev-770.iam.gserviceaccount.com"
+  type        = string
+  description = "GitHub OIDC principalSet/principal allowed to impersonate cicd-sa"
+  default     = null
 }
