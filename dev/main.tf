@@ -160,7 +160,6 @@ module "gke" {
 }
 
 
-
 # module "notify_gke_events" {
 #   source = "../modules/notification-service"
 
