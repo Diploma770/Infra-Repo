@@ -62,10 +62,13 @@ jobs:
             TFVARS_DEV_ADDONS) SECRET='${{ secrets.TFVARS_DEV_ADDONS }}' ;;
           esac
 
-          # Normalize line endings (remove CR)
-          printf '%s' "$SECRET" | tr -d '\r' > ci.auto.tfvars
+          # Normalize line endings (remove CR), then replace smart quotes with ASCII quotes
+          printf '%s' "$SECRET" \
+            | tr -d '\r' \
+            | sed -e 's/[“”]/"/g' -e "s/[‘’]/'/g" \
+            > ci.auto.tfvars
 
-          # Optional: fail fast if file contains “smart quotes”
+          # Optional: fail fast if file still contains smart quotes
           if grep -nP '[\x{201C}\x{201D}\x{2018}\x{2019}]' ci.auto.tfvars; then
             echo "Found smart quotes in tfvars. Replace them with normal ASCII quotes."
             exit 1
