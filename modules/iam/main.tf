@@ -10,7 +10,6 @@ resource "google_service_account" "cicd" {
   display_name = "CI/CD Deployer"
 }
 
-# Terraform SA permissions (minimal for infra + state bucket)
 resource "google_project_iam_member" "terraform_roles" {
   for_each = toset([
     "roles/compute.networkAdmin",
