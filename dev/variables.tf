@@ -1,15 +1,15 @@
 variable "project_id" {
-  type = string
+  type    = string
   default = "my-dev-770"
 }
 
 variable "region" {
-  type = string
+  type    = string
   default = "europe-west3"
 }
 
 variable "environment" {
-  type = string
+  type    = string
   default = "dev"
 }
 
@@ -18,7 +18,7 @@ variable "billing_account_id" {
 }
 
 variable "org_id" {
-  type = string
+  type    = string
   default = "0"
 }
 
