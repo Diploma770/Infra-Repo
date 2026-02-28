@@ -34,3 +34,13 @@ variable "smtp_app_password" {
 
 variable "functions_source_bucket" { type = string }
 variable "functions_source_object" { type = string }
+
+variable "terraform_github_principal" {
+  type    = string
+  default = "terraform-sa@my-dev-770.iam.gserviceaccount.com"
+}
+
+variable "cicd_github_principal" {
+  type    = string
+  default = "cicd-sa@my-dev-770.iam.gserviceaccount.com"
+}
