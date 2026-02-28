@@ -22,7 +22,8 @@ resource "google_project_iam_member" "terraform_roles" {
     "roles/serviceusage.serviceUsageAdmin",
     "roles/storage.admin",
     "roles/iam.workloadIdentityUser",
-    "roles/iam.serviceAccountTokenCreator"
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.serviceAccounts.getAccessToken"
   ])
 
   project = var.project_id
