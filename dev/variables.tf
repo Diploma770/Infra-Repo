@@ -23,10 +23,19 @@ variable "db_password" {
   sensitive = true
 }
 
-variable "notify_to_email" { type = string }
-variable "notify_from_email" { type = string }
+variable "notify_to_email" { 
+  type = string
+  default = "you@example.com"
+}
+variable "notify_from_email" { 
+  type = string
+  default = "you@example.com"
+}
 
-variable "smtp_user" { type = string }
+variable "smtp_user" { 
+  type = string
+  default = "you@example.com"
+}
 variable "smtp_app_password" {
   type      = string
   sensitive = true
