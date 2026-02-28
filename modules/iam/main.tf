@@ -21,7 +21,6 @@ resource "google_project_iam_member" "terraform_roles" {
     "roles/serviceusage.serviceUsageAdmin",
     "roles/storage.admin",
     "roles/resourcemanager.projectIamAdmin",
-    # "roles/iam.serviceAccountAdmin",
     "roles/artifactregistry.admin"
   ])
 
