@@ -4,7 +4,22 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars"
+      - ".github/workflows/terraform-plan.yml"
+      - ".github/workflows/terraform-apply.yml"
   workflow_dispatch:
+    inputs:
+      target:
+        description: "Stack to apply"
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - dev
+          - dev-addons
 
 permissions:
   contents: read
@@ -13,10 +28,15 @@ permissions:
 env:
   TF_IN_AUTOMATION: true
 
+concurrency:
+  group: terraform-apply-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   apply_dev:
     name: Apply dev (core)
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'dev'
 
     defaults:
       run:
@@ -52,7 +72,11 @@ jobs:
   apply_dev_addons:
     name: Apply dev (addons)
     runs-on: ubuntu-latest
-    needs: apply_dev
+    needs: [apply_dev]
+    if: |
+      always() &&
+      (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'dev-addons') &&
+      (needs.apply_dev.result == 'success' || needs.apply_dev.result == 'skipped')
 
     defaults:
       run:
@@ -75,11 +99,17 @@ jobs:
       - name: Setup kubectl auth plugin
         run: gcloud components install gke-gcloud-auth-plugin --quiet
 
+      - name: Enable GKE auth plugin
+        run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> "$GITHUB_ENV"
+
       - name: Get GKE credentials
         run: |
           gcloud container clusters get-credentials "${{ vars.GKE_DEV_CLUSTER_NAME }}" \
             --zone "${{ vars.GKE_DEV_CLUSTER_LOCATION }}" \
             --project "${{ vars.GCP_PROJECT_ID }}"
+
+      - name: Verify kubectl context
+        run: kubectl config current-context
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3

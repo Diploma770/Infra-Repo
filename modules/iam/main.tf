@@ -20,13 +20,31 @@ resource "google_project_iam_member" "terraform_roles" {
     "roles/pubsub.admin",
     "roles/iam.serviceAccountAdmin",
     "roles/serviceusage.serviceUsageAdmin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/iam.workloadIdentityUser",
+    "roles/iam.serviceAccountTokenCreator"
   ])
 
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
+
+# resource "google_service_account_iam_member" "terraform_wif_user" {
+#   count = var.terraform_github_principal == null ? 0 : 1
+
+#   service_account_id = google_service_account.terraform.name
+#   role               = "roles/iam.workloadIdentityUser"
+#   member             = var.terraform_github_principal
+# }
+
+# resource "google_service_account_iam_member" "terraform_token_creator" {
+#   count = var.terraform_github_principal == null ? 0 : 1
+
+#   service_account_id = google_service_account.terraform.name
+#   role               = "roles/iam.serviceAccountTokenCreator"
+#   member             = var.terraform_github_principal
+# }
 
 # CI/CD permissions (push images + deploy to GKE)
 resource "google_project_iam_member" "cicd_roles" {
@@ -39,6 +57,22 @@ resource "google_project_iam_member" "cicd_roles" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.cicd.email}"
+}
+
+resource "google_service_account_iam_member" "cicd_wif_user" {
+  count = var.cicd_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.cicd.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = var.cicd_github_principal
+}
+
+resource "google_service_account_iam_member" "cicd_token_creator" {
+  count = var.cicd_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.cicd.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = var.cicd_github_principal
 }
 
 # Cloud SQL service account for GKE workloads
