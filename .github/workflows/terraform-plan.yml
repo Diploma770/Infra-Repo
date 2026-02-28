@@ -56,14 +56,20 @@ jobs:
 
       - name: Write tfvars from secret
         run: |
+          SECRET=""
           case "${{ matrix.tfvars_secret }}" in
-            TFVARS_DEV)
-              printf '%s\n' "${{ secrets.TFVARS_DEV }}" > ci.auto.tfvars
-              ;;
-            TFVARS_DEV_ADDONS)
-              printf '%s\n' "${{ secrets.TFVARS_DEV_ADDONS }}" > ci.auto.tfvars
-              ;;
+            TFVARS_DEV) SECRET='${{ secrets.TFVARS_DEV }}' ;;
+            TFVARS_DEV_ADDONS) SECRET='${{ secrets.TFVARS_DEV_ADDONS }}' ;;
           esac
+
+          # Normalize line endings (remove CR)
+          printf '%s' "$SECRET" | tr -d '\r' > ci.auto.tfvars
+
+          # Optional: fail fast if file contains “smart quotes”
+          if grep -nP '[\x{201C}\x{201D}\x{2018}\x{2019}]' ci.auto.tfvars; then
+            echo "Found smart quotes in tfvars. Replace them with normal ASCII quotes."
+            exit 1
+          fi
 
       - name: Terraform Fmt Check
         run: terraform fmt -check -recursive
