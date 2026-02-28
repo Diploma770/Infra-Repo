@@ -37,6 +37,13 @@ jobs:
     name: Apply dev (core)
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'dev'
+    env:
+      TF_VAR_billing_account_id: ${{ secrets.BILLING_ACCOUNT_ID }}
+      TF_VAR_terraform_github_principal: ${{ secrets.TERRAFORM_GITHUB_PRINCIPAL }}
+      TF_VAR_cicd_github_principal: ${{ secrets.CICD_GITHUB_PRINCIPAL }}
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+      TF_VAR_smtp_app_password: ${{ secrets.SMTP_APP_PASSWORD }}
+      
 
     defaults:
       run:
@@ -56,10 +63,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Write tfvars from secret
-        run: |
-          printf '%s\n' "${{ secrets.TFVARS_DEV }}" > ci.auto.tfvars
-
       - name: Terraform Init (GCS backend)
         run: |
           terraform init -reconfigure \
@@ -67,7 +70,7 @@ jobs:
             -backend-config="prefix=terraform/dev"
 
       - name: Terraform Apply
-        run: terraform apply -input=false -auto-approve -var-file=ci.auto.tfvars
+        run: terraform apply -input=false -auto-approve
 
   apply_dev_addons:
     name: Apply dev (addons)
@@ -77,6 +80,11 @@ jobs:
       always() &&
       (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'dev-addons') &&
       (needs.apply_dev.result == 'success' || needs.apply_dev.result == 'skipped')
+    env:
+      TF_VAR_argocd_repo_ssh_private_key: ${{ secrets.ARGOCD_REPO_SSH_PRIVATE_KEY }}
+      TF_VAR_argocd_repo_password: ${{ secrets.ARGOCD_REPO_PASSWORD }}
+      TF_VAR_argocd_repo_username: ${{ secrets.ARGOCD_REPO_USERNAME }}
+
 
     defaults:
       run:
@@ -114,10 +122,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Write tfvars from secret
-        run: |
-          printf '%s\n' "${{ secrets.TFVARS_DEV_ADDONS }}" > ci.auto.tfvars
-
       - name: Terraform Init (GCS backend)
         run: |
           terraform init -reconfigure \
@@ -125,4 +129,4 @@ jobs:
             -backend-config="prefix=terraform/dev-addons"
 
       - name: Terraform Apply
-        run: terraform apply -input=false -auto-approve -var-file=ci.auto.tfvars
+        run: terraform apply -input=false -auto-approve

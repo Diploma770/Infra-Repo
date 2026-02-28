@@ -1,23 +1,28 @@
 variable "project_id" {
   type = string
+  default = "my-dev-770"
 }
 
 variable "region" {
   type = string
+  default = "europe-west3"
 }
 
 variable "cluster_name" {
   type = string
+  default = "dev-gke"
 }
 
 variable "cluster_location" {
   type        = string
   description = "GKE cluster location (zone for zonal cluster)"
+  default     = "europe-west3-a"
 }
 
 variable "cloudsql_sa_email" {
   type        = string
   description = "GCP service account email used by workloads for Cloud SQL access"
+  default     = "gke-cloudsql-sa@my-dev-770.iam.gserviceaccount.com"
 }
 
 variable "workload_namespaces" {

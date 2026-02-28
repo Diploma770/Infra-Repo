@@ -12,7 +12,7 @@ Execution order is enforced:
 1) `dev`
 2) `dev-addons`
 
-## 1) Organization secrets (OIDC + tfvars)
+## 1) Organization secrets (OIDC + TF_VAR sensitive inputs)
 
 Create these **organization secrets**:
 
@@ -20,10 +20,13 @@ Create these **organization secrets**:
   - Example: `projects/123456789/locations/global/workloadIdentityPools/github/providers/github`
 - `GCP_TERRAFORM_SERVICE_ACCOUNT`
   - Example: `terraform-ci@my-dev-770.iam.gserviceaccount.com`
-- `TFVARS_DEV`
-  - Full content of `dev/dev.tfvars` (without committing file)
-- `TFVARS_DEV_ADDONS`
-  - Full content of `dev-addons/dev-addons.tfvars` (without committing file)
+- `BILLING_ACCOUNT_ID`
+- `TERRAFORM_GITHUB_PRINCIPAL`
+- `CICD_GITHUB_PRINCIPAL`
+- `DB_PASSWORD`
+- `SMTP_APP_PASSWORD`
+- `ARGOCD_REPO_PASSWORD`
+- `ARGOCD_REPO_SSH_PRIVATE_KEY` (optional if using HTTPS auth)
 
 ## 2) Organization/repository variables
 
