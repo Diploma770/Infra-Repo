@@ -23,6 +23,8 @@ jobs:
   plan:
     name: Plan (${{ matrix.stack }})
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_billing_account_id: ${{ secrets.BILLING_ACCOUNT_ID }}
     strategy:
       fail-fast: false
       matrix:
