@@ -77,7 +77,7 @@ resource "google_service_account_iam_member" "terraform_wif_user" {
   role               = "roles/iam.workloadIdentityUser"
   member             = var.terraform_github_principal
 
-  depends_on = [ google_project_iam_member.terraform_roles ]
+  depends_on = [google_project_iam_member.terraform_roles]
 }
 
 resource "google_service_account_iam_member" "terraform_token_creator" {
@@ -87,5 +87,5 @@ resource "google_service_account_iam_member" "terraform_token_creator" {
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = var.terraform_github_principal
 
-  depends_on = [ google_project_iam_member.terraform_roles ]
+  depends_on = [google_project_iam_member.terraform_roles]
 }

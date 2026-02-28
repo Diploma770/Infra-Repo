@@ -24,9 +24,9 @@ resource "helm_release" "argocd" {
   chart      = "argo-cd"
 
   set {
-      name  = "server.service.type"
-      value = "LoadBalancer"
-    }
+    name  = "server.service.type"
+    value = "LoadBalancer"
+  }
 
   depends_on = [kubernetes_namespace.argocd]
 }

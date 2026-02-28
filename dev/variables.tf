@@ -23,7 +23,7 @@ variable "db_password" {
   sensitive = true
 }
 
-variable "notify_to_email"   { type = string }
+variable "notify_to_email" { type = string }
 variable "notify_from_email" { type = string }
 
 variable "smtp_user" { type = string }

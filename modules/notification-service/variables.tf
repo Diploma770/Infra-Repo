@@ -1,5 +1,5 @@
 variable "project_id" { type = string }
-variable "region"     { type = string }
+variable "region" { type = string }
 
 variable "function_name" { type = string }
 
@@ -8,7 +8,7 @@ variable "topic_id" {
   description = "Pub/Sub topic ID that triggers the function."
 }
 
-variable "to_email"   { type = string }
+variable "to_email" { type = string }
 variable "from_email" { type = string }
 
 # Gmail SMTP

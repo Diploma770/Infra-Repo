@@ -63,14 +63,14 @@ resource "google_service_account_iam_member" "eso_wi_user" {
 
 # 6) Install ESO via Helm, using the existing KSA
 resource "helm_release" "eso" {
-  name       = "external-secrets"
-  namespace  = kubernetes_namespace.eso.metadata[0].name
-  repository = "https://charts.external-secrets.io"
-  chart      = "external-secrets"
-  version    = "2.0.1" # pin explicitly
-  timeout    = 900
-  wait       = true
-  atomic     = true
+  name            = "external-secrets"
+  namespace       = kubernetes_namespace.eso.metadata[0].name
+  repository      = "https://charts.external-secrets.io"
+  chart           = "external-secrets"
+  version         = "2.0.1" # pin explicitly
+  timeout         = 900
+  wait            = true
+  atomic          = true
   cleanup_on_fail = true
 
   set {
