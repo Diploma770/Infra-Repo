@@ -4,14 +4,14 @@ resource "google_sql_database_instance" "this" {
   name             = var.instance_name
   project          = var.project_id
   region           = var.region
-  database_version = "POSTGRES_15" 
+  database_version = "POSTGRES_15"
 
   settings {
     tier              = var.tier
     availability_type = "ZONAL" # no replicas/HA
 
-    disk_type    = "PD_HDD"     # cheaper than SSD
-    disk_size    = var.disk_size_gb
+    disk_type       = "PD_HDD" # cheaper than SSD
+    disk_size       = var.disk_size_gb
     disk_autoresize = true
 
     backup_configuration {
@@ -19,15 +19,15 @@ resource "google_sql_database_instance" "this" {
     }
 
     ip_configuration {
-    ipv4_enabled = true
+      ipv4_enabled = true
 
-        dynamic "authorized_networks" {
-            for_each = var.authorized_networks
-            content {
-            name  = "allowed-${replace(authorized_networks.value, "/", "-")}"
-            value = authorized_networks.value
-            }
+      dynamic "authorized_networks" {
+        for_each = var.authorized_networks
+        content {
+          name  = "allowed-${replace(authorized_networks.value, "/", "-")}"
+          value = authorized_networks.value
         }
+      }
     }
   }
 

@@ -10,7 +10,6 @@ resource "google_service_account" "cicd" {
   display_name = "CI/CD Deployer"
 }
 
-# Terraform SA permissions (minimal for infra + state bucket)
 resource "google_project_iam_member" "terraform_roles" {
   for_each = toset([
     "roles/compute.networkAdmin",
@@ -20,7 +19,9 @@ resource "google_project_iam_member" "terraform_roles" {
     "roles/pubsub.admin",
     "roles/iam.serviceAccountAdmin",
     "roles/serviceusage.serviceUsageAdmin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/artifactregistry.admin"
   ])
 
   project = var.project_id
@@ -41,6 +42,22 @@ resource "google_project_iam_member" "cicd_roles" {
   member  = "serviceAccount:${google_service_account.cicd.email}"
 }
 
+resource "google_service_account_iam_member" "cicd_wif_user" {
+  count = var.cicd_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.cicd.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = var.cicd_github_principal
+}
+
+resource "google_service_account_iam_member" "cicd_token_creator" {
+  count = var.cicd_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.cicd.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = var.cicd_github_principal
+}
+
 # Cloud SQL service account for GKE workloads
 resource "google_service_account" "cloudsql_sa" {
   project      = var.project_id
@@ -52,4 +69,25 @@ resource "google_project_iam_member" "cloudsql_client" {
   project = var.project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.cloudsql_sa.email}"
+}
+
+
+resource "google_service_account_iam_member" "terraform_wif_user" {
+  count = var.terraform_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.terraform.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = var.terraform_github_principal
+
+  depends_on = [google_project_iam_member.terraform_roles]
+}
+
+resource "google_service_account_iam_member" "terraform_token_creator" {
+  count = var.terraform_github_principal == null ? 0 : 1
+
+  service_account_id = google_service_account.terraform.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = var.terraform_github_principal
+
+  depends_on = [google_project_iam_member.terraform_roles]
 }

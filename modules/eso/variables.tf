@@ -27,3 +27,18 @@ variable "cluster_secret_store_name" {
   type    = string
   default = "gcp-sm-store"
 }
+
+variable "create_cluster_secret_store" {
+  type    = bool
+  default = true
+}
+
+variable "crd_ready_wait_seconds" {
+  type    = number
+  default = 20
+}
+
+variable "crd_ready_wait_retries" {
+  type    = number
+  default = 15
+}

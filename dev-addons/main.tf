@@ -37,6 +37,7 @@ module "eso" {
   namespace                   = var.eso_namespace
   k8s_service_account_name    = var.eso_k8s_service_account_name
   create_k8s_service_account  = var.eso_create_k8s_service_account
+  create_cluster_secret_store = var.eso_create_cluster_secret_store
   gcp_service_account_id      = var.eso_gcp_service_account_id
 
   providers = {

@@ -53,8 +53,8 @@ module "vpc" {
   region       = var.region
   subnet_cidr  = "10.10.0.0/20"
 
-  enable_nat      = true
-  reserve_nat_ip  = false
+  enable_nat     = true
+  reserve_nat_ip = false
 
   ssh_source_ranges = []
 
@@ -64,8 +64,10 @@ module "vpc" {
 }
 
 module "iam" {
-  source     = "../modules/iam"
-  project_id  = var.project_id
+  source                     = "../modules/iam"
+  project_id                 = var.project_id
+  terraform_github_principal = var.terraform_github_principal
+  cicd_github_principal      = var.cicd_github_principal
 
   depends_on = [google_project_service.required_apis]
 }
@@ -88,14 +90,15 @@ module "artifact_registry" {
 }
 
 module "buckets" {
-  source    = "../modules/buckets"
+  source     = "../modules/buckets"
   project_id = var.project_id
 
   buckets = {
-    "${var.project_id}-tfstate-${var.environment}" = {
-      location   = "EU"
-      versioning = true
-    }
+    # "${var.project_id}-tfstate-${var.environment}" = {
+    #   location        = "EU"
+    #   versioning      = true
+    #   prevent_destroy = true
+    # }
 
     "${var.project_id}-app-${var.environment}" = {
       location   = "EU"
@@ -103,15 +106,16 @@ module "buckets" {
     }
   }
 
+
   depends_on = [google_project_service.required_apis]
 }
 
 module "cloudsql" {
   source = "../modules/cloudsql"
 
-  project_id     = var.project_id
-  region         = var.region
-  instance_name  = "${var.environment}-pg"
+  project_id    = var.project_id
+  region        = var.region
+  instance_name = "${var.environment}-pg"
 
   db_name     = "app"
   db_user     = "appuser"
@@ -130,8 +134,8 @@ module "pubsub" {
 module "gke" {
   source = "../modules/gke"
 
-  project_id    = var.project_id
-  cluster_name  = "${var.environment}-gke"
+  project_id   = var.project_id
+  cluster_name = "${var.environment}-gke"
 
   cluster_zone = "europe-west3-a"
   node_zones   = ["europe-west3-a", "europe-west3-b"]
@@ -155,6 +159,7 @@ module "gke" {
 
   depends_on = [module.vpc, module.pubsub, google_project_service.required_apis, module.iam]
 }
+
 
 
 # module "notify_gke_events" {

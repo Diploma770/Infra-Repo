@@ -2,7 +2,7 @@ resource "google_container_cluster" "this" {
   name     = var.cluster_name
   project  = var.project_id
   location = var.cluster_zone
-  
+
 
   network    = var.network_name
   subnetwork = var.subnet_name
@@ -12,7 +12,7 @@ resource "google_container_cluster" "this" {
 
   deletion_protection = false
 
-  
+
 
   # Private cluster
   private_cluster_config {
@@ -60,10 +60,10 @@ resource "google_container_cluster" "this" {
 
 # 1 node in europe-west3-a
 resource "google_container_node_pool" "np_a" {
-  name       = "${var.cluster_name}-np-a"
-  project    = var.project_id
-  location   = var.cluster_zone
-  cluster    = google_container_cluster.this.name
+  name     = "${var.cluster_name}-np-a"
+  project  = var.project_id
+  location = var.cluster_zone
+  cluster  = google_container_cluster.this.name
 
   node_locations = [var.node_zones[0]]
   node_count     = 1
@@ -71,16 +71,16 @@ resource "google_container_node_pool" "np_a" {
   node_config {
     machine_type = var.machine_type
     oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-    metadata = { disable-legacy-endpoints = "true" }
+    metadata     = { disable-legacy-endpoints = "true" }
   }
 }
 
 # 1 node in europe-west3-b
 resource "google_container_node_pool" "np_b" {
-  name       = "${var.cluster_name}-np-b"
-  project    = var.project_id
-  location   = var.cluster_zone
-  cluster    = google_container_cluster.this.name
+  name     = "${var.cluster_name}-np-b"
+  project  = var.project_id
+  location = var.cluster_zone
+  cluster  = google_container_cluster.this.name
 
   node_locations = [var.node_zones[1]]
   node_count     = 1
@@ -88,7 +88,7 @@ resource "google_container_node_pool" "np_b" {
   node_config {
     machine_type = var.machine_type
     oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-    metadata = { disable-legacy-endpoints = "true" }
+    metadata     = { disable-legacy-endpoints = "true" }
   }
 
   depends_on = [google_container_node_pool.np_a]

@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
   }
 }
 
@@ -59,12 +63,21 @@ resource "google_service_account_iam_member" "eso_wi_user" {
 
 # 6) Install ESO via Helm, using the existing KSA
 resource "helm_release" "eso" {
-  name       = "external-secrets"
-  namespace  = kubernetes_namespace.eso.metadata[0].name
-  repository = "https://charts.external-secrets.io"
-  chart      = "external-secrets"
+  name            = "external-secrets"
+  namespace       = kubernetes_namespace.eso.metadata[0].name
+  repository      = "https://charts.external-secrets.io"
+  chart           = "external-secrets"
+  version         = "2.0.1" # pin explicitly
+  timeout         = 900
+  wait            = true
+  atomic          = true
+  cleanup_on_fail = true
 
-  # IMPORTANT: reuse KSA (don't let Helm create it)
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+
   set {
     name  = "serviceAccount.create"
     value = "false"
@@ -82,21 +95,68 @@ resource "helm_release" "eso" {
   ]
 }
 
-resource "kubernetes_manifest" "gcp_sm_store" {
-  manifest = {
-    apiVersion = "external-secrets.io/v1"
-    kind       = "ClusterSecretStore"
-    metadata = {
-      name = var.cluster_secret_store_name
-    }
-    spec = {
-      provider = {
-        gcpsm = {
-          projectID = var.project_id
-        }
-      }
-    }
+resource "null_resource" "wait_eso_crds" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -euo pipefail
+      for i in $(seq 1 ${var.crd_ready_wait_retries}); do
+        ok=1
+        kubectl get crd externalsecrets.external-secrets.io >/dev/null 2>&1 || ok=0
+        kubectl get crd clustersecretstores.external-secrets.io >/dev/null 2>&1 || ok=0
+        if [ "$ok" -eq 1 ]; then
+          exit 0
+        fi
+        if [ "$i" -eq "${var.crd_ready_wait_retries}" ]; then
+          echo "Required ESO CRDs not ready"
+          exit 1
+        fi
+        sleep ${var.crd_ready_wait_seconds}
+      done
+    EOT
   }
 
   depends_on = [helm_release.eso]
+}
+
+resource "null_resource" "gcp_sm_store" {
+  count = var.create_cluster_secret_store ? 1 : 0
+
+  triggers = {
+    store_name = var.cluster_secret_store_name
+    project_id = var.project_id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -euo pipefail
+      for i in $(seq 1 ${var.crd_ready_wait_retries}); do
+        if kubectl get crd clustersecretstores.external-secrets.io >/dev/null 2>&1; then
+          break
+        fi
+        if [ "$i" -eq "${var.crd_ready_wait_retries}" ]; then
+          echo "ClusterSecretStore CRD not ready after ${var.crd_ready_wait_retries} attempts"
+          exit 1
+        fi
+        sleep ${var.crd_ready_wait_seconds}
+      done
+
+      cat <<'EOF' | kubectl apply -f -
+      apiVersion: external-secrets.io/v1
+      kind: ClusterSecretStore
+      metadata:
+        name: ${var.cluster_secret_store_name}
+      spec:
+        provider:
+          gcpsm:
+            projectID: ${var.project_id}
+      EOF
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "kubectl delete clustersecretstore ${self.triggers.store_name} --ignore-not-found=true"
+  }
+
+  depends_on = [null_resource.wait_eso_crds]
 }

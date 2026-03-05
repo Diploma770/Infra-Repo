@@ -4,7 +4,8 @@ variable "project_id" {
 
 variable "buckets" {
   type = map(object({
-    location   = string
-    versioning = bool
+    location        = string
+    versioning      = bool
+    prevent_destroy = optional(bool, false)
   }))
 }
