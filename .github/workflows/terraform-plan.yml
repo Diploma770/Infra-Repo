@@ -92,8 +92,10 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const planPath = `${process.env.GITHUB_WORKSPACE}/${{ toJson(matrix.working_dir) }}/plan.txt`;
+
+            const planPath = `${process.env.GITHUB_WORKSPACE}/${{ matrix.working_dir }}/plan.txt`;
             const fullPlan = fs.readFileSync(planPath, 'utf8');
+
             const maxLen = 60000;
             const renderedPlan = fullPlan.length > maxLen
               ? fullPlan.slice(0, maxLen) + '\n\n...truncated...'
