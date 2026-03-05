@@ -62,7 +62,7 @@ variable "eso_create_cluster_secret_store" {
 
 variable "argocd_create_repo_secret" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "argocd_repo_secret_name" {
@@ -72,12 +72,12 @@ variable "argocd_repo_secret_name" {
 
 variable "argocd_repo_url" {
   type    = string
-  default = null
+  default = "https://github.com/Diploma770/Ops-Repo.git"
 }
 
 variable "argocd_repo_auth_type" {
   type    = string
-  default = "ssh"
+  default = "https"
 }
 
 variable "argocd_repo_ssh_private_key" {
