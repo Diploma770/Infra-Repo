@@ -118,44 +118,22 @@ resource "null_resource" "wait_eso_crds" {
   depends_on = [helm_release.eso]
 }
 
-resource "null_resource" "gcp_sm_store" {
+resource "kubernetes_manifest" "gcp_sm_store" {
   count = var.create_cluster_secret_store ? 1 : 0
 
-  triggers = {
-    store_name = var.cluster_secret_store_name
-    project_id = var.project_id
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      set -euo pipefail
-      for i in $(seq 1 ${var.crd_ready_wait_retries}); do
-        if kubectl get crd clustersecretstores.external-secrets.io >/dev/null 2>&1; then
-          break
-        fi
-        if [ "$i" -eq "${var.crd_ready_wait_retries}" ]; then
-          echo "ClusterSecretStore CRD not ready after ${var.crd_ready_wait_retries} attempts"
-          exit 1
-        fi
-        sleep ${var.crd_ready_wait_seconds}
-      done
-
-      cat <<'EOF' | kubectl apply -f -
-      apiVersion: external-secrets.io/v1
-      kind: ClusterSecretStore
-      metadata:
-        name: ${var.cluster_secret_store_name}
-      spec:
-        provider:
-          gcpsm:
-            projectID: ${var.project_id}
-      EOF
-    EOT
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl delete clustersecretstore ${self.triggers.store_name} --ignore-not-found=true"
+  manifest = {
+    apiVersion = "external-secrets.io/v1"
+    kind       = "ClusterSecretStore"
+    metadata = {
+      name = var.cluster_secret_store_name
+    }
+    spec = {
+      provider = {
+        gcpsm = {
+          projectID = var.project_id
+        }
+      }
+    }
   }
 
   depends_on = [null_resource.wait_eso_crds]
