@@ -27,7 +27,7 @@ variable "cloudsql_sa_email" {
 
 variable "workload_namespaces" {
   type    = list(string)
-  default = ["default"]
+  default = ["default", "dev"]
 }
 
 variable "cloudsql_ksa_name" {
