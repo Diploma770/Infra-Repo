@@ -381,7 +381,7 @@ resource "helm_release" "alloy" {
             }
 
             external_labels = {
-              cluster = "${var.cluster_name}"
+              cluster = "${var.cluster_name}",
             }
           }
 
