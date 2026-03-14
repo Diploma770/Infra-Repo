@@ -104,6 +104,16 @@ module "buckets" {
       location   = "EU"
       versioning = false
     }
+
+    "${var.project_id}-loki-${var.environment}" = {
+      location   = "EU"
+      versioning = true
+    }
+
+    "${var.project_id}-tempo-${var.environment}" = {
+      location   = "EU"
+      versioning = true
+    }
   }
 
 
