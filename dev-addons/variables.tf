@@ -96,3 +96,14 @@ variable "argocd_repo_password" {
   default   = null
   sensitive = true
 }
+
+variable "observability_namespace" {
+  type    = string
+  default = "observability"
+}
+
+variable "grafana_service_type" {
+  type        = string
+  description = "Service type to expose Grafana"
+  default     = "LoadBalancer"
+}

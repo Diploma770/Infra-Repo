@@ -45,3 +45,22 @@ module "eso" {
     helm       = helm
   }
 }
+
+module "observability" {
+  source = "../modules/observability"
+
+  project_id   = var.project_id
+  cluster_name = var.cluster_name
+  namespace    = var.observability_namespace
+
+  loki_bucket_name  = "${var.project_id}-loki-dev"
+  tempo_bucket_name = "${var.project_id}-tempo-dev"
+
+  grafana_service_type = var.grafana_service_type
+
+  providers = {
+    google     = google
+    kubernetes = kubernetes
+    helm       = helm
+  }
+}
