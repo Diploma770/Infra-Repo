@@ -82,9 +82,21 @@ resource "google_storage_bucket_iam_member" "loki_bucket_access" {
   member = "serviceAccount:${google_service_account.loki.email}"
 }
 
+resource "google_storage_bucket_iam_member" "loki_bucket_metadata_access" {
+  bucket = var.loki_bucket_name
+  role   = "roles/storage.legacyBucketReader"
+  member = "serviceAccount:${google_service_account.loki.email}"
+}
+
 resource "google_storage_bucket_iam_member" "tempo_bucket_access" {
   bucket = var.tempo_bucket_name
   role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.tempo.email}"
+}
+
+resource "google_storage_bucket_iam_member" "tempo_bucket_metadata_access" {
+  bucket = var.tempo_bucket_name
+  role   = "roles/storage.legacyBucketReader"
   member = "serviceAccount:${google_service_account.tempo.email}"
 }
 
@@ -94,11 +106,18 @@ resource "helm_release" "kube_prometheus_stack" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   version    = "82.10.3"
+  timeout    = 900
 
   values = [yamlencode({
     prometheusOperator = {
+      tls = {
+        enabled = false
+      }
       admissionWebhooks = {
         enabled = false
+        patch = {
+          enabled = false
+        }
       }
     }
     grafana = {
@@ -236,6 +255,7 @@ resource "helm_release" "loki" {
 
   depends_on = [
     google_storage_bucket_iam_member.loki_bucket_access,
+    google_storage_bucket_iam_member.loki_bucket_metadata_access,
     google_service_account_iam_member.loki_workload_identity
   ]
 }
@@ -246,6 +266,7 @@ resource "helm_release" "tempo" {
   repository = "https://grafana-community.github.io/helm-charts"
   chart      = "tempo"
   version    = "1.26.7"
+  timeout    = 900
 
   values = [yamlencode({
     tempo = {
@@ -273,6 +294,7 @@ resource "helm_release" "tempo" {
 
   depends_on = [
     google_storage_bucket_iam_member.tempo_bucket_access,
+    google_storage_bucket_iam_member.tempo_bucket_metadata_access,
     google_service_account_iam_member.tempo_workload_identity
   ]
 }
@@ -283,6 +305,7 @@ resource "helm_release" "alloy" {
   repository = "https://grafana.github.io/helm-charts"
   chart      = "alloy"
   version    = "1.6.2"
+  timeout    = 900
 
   values = [yamlencode({
     controller = {
