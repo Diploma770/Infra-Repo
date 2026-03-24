@@ -282,6 +282,16 @@ resource "helm_release" "tempo" {
 
   values = [yamlencode({
     tempo = {
+      readinessProbe = {
+        initialDelaySeconds = 60
+        periodSeconds       = 10
+        failureThreshold    = 10
+      }
+      livenessProbe = {
+        initialDelaySeconds = 90
+        periodSeconds       = 10
+        failureThreshold    = 10
+      }
       storage = {
         trace = {
           backend = "gcs"
