@@ -138,13 +138,25 @@ resource "helm_release" "kube_prometheus_stack" {
           type   = "loki"
           access = "proxy"
           url    = "http://loki-gateway.${var.namespace}.svc.cluster.local"
+          editable = true
+          jsonData = {
+            derivedFields = [
+              {
+                name          = "trace_id"
+                matcherRegex  = "trace_id\":\"(\\w+)"
+                datasourceUid = "tempo"
+                url           = "$${__value.raw}"
+              }
+            ]
+          }
         },
         {
           name   = "Tempo"
           uid    = "tempo"
           type   = "tempo"
           access = "proxy"
-          url    = "http://tempo.${var.namespace}.svc.cluster.local:3100"
+          url    = "http://tempo.${var.namespace}.svc.cluster.local:3200"
+          editable = true
         }
       ]
     }
